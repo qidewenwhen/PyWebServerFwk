@@ -110,3 +110,11 @@ class PyFwk:
         self.url_map[url] = endpoint
 
         self.function_map[endpoint] = ExecFunc(func, func_type, **options)
+
+    def bind_view(self, url, view_class, endpoint):
+        self.add_url_rule(url, func = view_class.get_func(endpoint), func_type = 'view')
+
+    def load_controller(self, controller):
+        name = controller.__name__()
+        for rule in controller.url_map:
+            self.bind_view(rule['url'], rule['view'], name + '.' + rule['endpoint'])

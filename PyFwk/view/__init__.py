@@ -4,7 +4,7 @@ class View:
 	method_meta = None
 
 	def router(self, request, *args, **options):
-		raise notImplementedError
+		raise NotImplementedError
 
 	@classmethod
 	def get_func(cls, name):

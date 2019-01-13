@@ -5,6 +5,7 @@ import os
 import PyFwk.exceptions as exceptions
 from PyFwk.helper import parse_static_key
 from PyFwk.route import Route
+from PyFwk.template_engine import replace_template
 
 ERROR_MAP = {
         '401': Response('<h1>401 Unknown or unsupported method</h1>', content_type = 'text/html; charset = UTF-8', status = 404),
@@ -27,13 +28,17 @@ class ExecFunc:
         self.options = options
 
 class PyFwk:
-    def __init__(self, static_folder = 'static'):
+    template_folder = None
+
+    def __init__(self, static_folder = 'static', template_folder = 'template'):
         self.host = '127.0.0.1'
         self.port = 8086
         self.url_map = {}
         self.static_map = {}
         self.function_map = {}
         self.static_folder = static_folder
+        self.template_folder = template_folder
+        PyFwk.template_folder = self.template_folder
         self.route = Route(self)
 
     def router(self, request):
@@ -118,3 +123,8 @@ class PyFwk:
         name = controller.__name__()
         for rule in controller.url_map:
             self.bind_view(rule['url'], rule['view'], name + '.' + rule['endpoint'])
+
+    @staticmethod
+    def simple_template(path, **options):
+        print(path)
+        return replace_template(PyFwk, path, **options)

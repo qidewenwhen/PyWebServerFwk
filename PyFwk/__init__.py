@@ -6,6 +6,7 @@ import PyFwk.exceptions as exceptions
 from PyFwk.helper import parse_static_key
 from PyFwk.route import Route
 from PyFwk.template_engine import replace_template
+from PyFwk.session import create_session_id, session
 
 ERROR_MAP = {
         '401': Response('<h1>401 Unknown or unsupported method</h1>', content_type = 'text/html; charset = UTF-8', status = 404),
@@ -30,7 +31,7 @@ class ExecFunc:
 class PyFwk:
     template_folder = None
 
-    def __init__(self, static_folder = 'static', template_folder = 'template'):
+    def __init__(self, static_folder = 'static', template_folder = 'template', session_path = '.session'):
         self.host = '127.0.0.1'
         self.port = 8086
         self.url_map = {}
@@ -40,6 +41,7 @@ class PyFwk:
         self.template_folder = template_folder
         PyFwk.template_folder = self.template_folder
         self.route = Route(self)
+        self.session_path = session_path
 
     def router(self, request):
         url = "/" + "/".join(request.url.split("/")[3:]).split("?")[0]
@@ -49,7 +51,15 @@ class PyFwk:
         else:
             endpoint = self.url_map.get(url, None)
 
-        headers = {'Server': 'PyFwk 0.1'}
+        cookies = request.cookies
+        if 'session_id' not in cookies:
+            headers = {
+                'Set-Cookie': 'session_id=%s' % create_session_id(),
+                'Server': 'PyFwk'
+            }
+        else:
+            headers = {'Server': 'PyFwk'}
+
         if endpoint is None:
             return ERROR_MAP['404']
         exec_function = self.function_map[endpoint]
@@ -97,6 +107,13 @@ class PyFwk:
 
         self.function_map['static'] = ExecFunc(func = self.router_static, func_type = 'static')
 
+        if not os.path.exists(self.session_path):
+            os.mkdir(self.session_path)
+
+        session.set_storage_path(self.session_path)
+
+        session.load_local_session()
+
         run_simple(hostname = self.host, port = self.port, application = self, **options)
 
     def __call__(self, environ, start_response):
@@ -126,5 +143,4 @@ class PyFwk:
 
     @staticmethod
     def simple_template(path, **options):
-        print(path)
         return replace_template(PyFwk, path, **options)

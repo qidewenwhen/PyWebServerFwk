@@ -1,4 +1,4 @@
-from PyFwk import PyFwk, simple_template, redirect, render_json
+from PyFwk import PyFwk, simple_template, redirect, render_json, render_file
 from PyFwk.view import Controller
 from core.base_view import BaseView, SessionView
 from PyFwk.session import session
@@ -30,6 +30,10 @@ class API(BaseView):
 		}
 		return render_json(data)
 
+class Download(BaseView):
+	def get(self, request):
+		return render_file('main.py')
+
 syl_url_map = [
 	{
 		'url': '/',
@@ -50,6 +54,11 @@ syl_url_map = [
 		'url': '/api',
 		'view': API,
 		'endpoint': 'api'
+	},
+	{
+		'url': '/download',
+		'view': Download,
+		'endpoint': 'download'
 	}
 ]
 

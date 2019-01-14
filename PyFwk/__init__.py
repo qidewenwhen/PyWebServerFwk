@@ -22,6 +22,14 @@ TYPE_MAP = {
         'jpeg': 'image/jpeg'
         }
 
+def redirect(url, status_code = 302):
+    response = Response('', status = status_code)
+    response.headers['Location'] = url
+    return response
+
+def simple_template(path, **options):
+    return replace_template(PyFwk, path, **options)
+
 class ExecFunc:
     def __init__(self, func, func_type, **options):
         self.func = func
@@ -82,6 +90,8 @@ class PyFwk:
         status = 200
         content_type = 'text/html'
 
+        if isinstance(rep, Response):
+            return rep
         return Response(rep, content_type = '%s; charset = UTF-8' % content_type, headers = headers, status = status)
 
     def router_static(self, static_path):
@@ -141,6 +151,4 @@ class PyFwk:
         for rule in controller.url_map:
             self.bind_view(rule['url'], rule['view'], name + '.' + rule['endpoint'])
 
-    @staticmethod
-    def simple_template(path, **options):
-        return replace_template(PyFwk, path, **options)
+

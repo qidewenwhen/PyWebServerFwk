@@ -1,5 +1,6 @@
 from PyFwk.view import View
 from PyFwk.session import AuthSession, session
+from PyFwk import redirect
 
 class BaseView(View):
     methods = ['GET', 'POST']
@@ -24,7 +25,7 @@ class AuthLogin(AuthSession):
 
     @staticmethod
     def auth_fail_callback(request, *args, **options):
-        return '<a href="/login">Login</a>'
+        return redirect("/login")
 
     @staticmethod
     def auth_logic(request, *args, **options):

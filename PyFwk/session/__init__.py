@@ -25,7 +25,7 @@ class Session:
 	def push(self, request, item, value):
 		session_id = get_session_id(request)
 		if session_id in self.__session_map__:
-			self.__session_map__[get_session_id(request)][item] = value
+			self.__session_map__[session_id][item] = value
 		else:
 			self.__session_map__[session_id] = {}
 			self.__session_map__[session_id][item] = value
@@ -42,8 +42,6 @@ class Session:
 		self.__storage_path__ = path
 
 	def storage(self, session_id):
-		print(self.__storage_path__)
-		print("he")
 		session_path = os.path.join(self.__storage_path__, session_id)
 
 		if self.__storage_path__ is not None:
@@ -75,9 +73,9 @@ class AuthSession:
 		def decorator(obj, request):
 			return f(obj, request) if cls.auth_logic(request, *args, **options) else cls.auth_fail_callback(request, *args, **options)
 		return decorator
-
+	@staticmethod
 	def auth_logic(request, *args, **options):
 		raise NotImplementedError
-
+	@staticmethod
 	def auth_fail_callback(request, *args, **options):
 		raise NotImplementedError

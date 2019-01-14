@@ -2,6 +2,7 @@ from werkzeug.serving import run_simple
 from werkzeug.wrappers import Response
 from PyFwk.wsgi_adapter import wsgi_app
 import os
+import json
 import PyFwk.exceptions as exceptions
 from PyFwk.helper import parse_static_key
 from PyFwk.route import Route
@@ -23,12 +24,19 @@ TYPE_MAP = {
         }
 
 def redirect(url, status_code = 302):
-    response = Response('', status = status_code)
+    response = Response(status = status_code)
     response.headers['Location'] = url
     return response
 
 def simple_template(path, **options):
     return replace_template(PyFwk, path, **options)
+
+def render_json(data):
+    content_type = 'text/plain'
+    if isinstance(data, dict) or isinstance(data, list):
+        data = json.dumps(data)
+        content_type = 'application/json'
+    return Response(data, content_type="%s; charset=UTF-8" % content_type, status = 200)
 
 class ExecFunc:
     def __init__(self, func, func_type, **options):

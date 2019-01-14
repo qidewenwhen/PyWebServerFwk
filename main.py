@@ -1,4 +1,4 @@
-from PyFwk import PyFwk, simple_template, redirect
+from PyFwk import PyFwk, simple_template, redirect, render_json
 from PyFwk.view import Controller
 from core.base_view import BaseView, SessionView
 from PyFwk.session import session
@@ -21,6 +21,15 @@ class Logout(BaseView):
 		session.pop(request, 'user')
 		return redirect('/')
 
+class API(BaseView):
+	def get(self, request):
+		data = {
+			'name': 'DQi',
+			'University': 'SCU',
+			'Department': 'CSE'
+		}
+		return render_json(data)
+
 syl_url_map = [
 	{
 		'url': '/',
@@ -36,6 +45,11 @@ syl_url_map = [
 		'url': '/logout',
 		'view': Logout,
 		'endpoint': 'logout'
+	},
+	{
+		'url': '/api',
+		'view': API,
+		'endpoint': 'api'
 	}
 ]
 

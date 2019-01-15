@@ -2,6 +2,7 @@ from PyFwk import PyFwk, simple_template, redirect, render_json, render_file
 from PyFwk.view import Controller
 from core.base_view import BaseView, SessionView
 from PyFwk.session import session
+from core.database import dbconn
 
 class Index(SessionView):
 	def get(self, request):
@@ -10,25 +11,31 @@ class Index(SessionView):
 
 class Login(BaseView):
 	def get(self, request):
-		return simple_template("login.html")
+		state = request.args.get('state', '1')
+		return simple_template("layout.html", title = 'login', message = 'please input username' if state == "1" else "error for username, please input again")
 	def post(self, request):
-		user = request.form['user']
-		session.push(request, 'user', user)
-		return redirect('/')
+		ret = dbconn.execute('''SELECT * FROM user WHERE f_name = %(user)s''', request.form)
+		if ret.rows == 1:
+			user = ret.get_first()['f_name']
+			session.push(request, 'user', user)
+			return redirect("/")
+		return redirect("/login?state=0")
 
 class Logout(BaseView):
 	def get(self, request):
 		session.pop(request, 'user')
 		return redirect('/')
 
-class API(BaseView):
-	def get(self, request):
-		data = {
-			'name': 'DQi',
-			'University': 'SCU',
-			'Department': 'CSE'
-		}
-		return render_json(data)
+class Register(BaseView):
+	def  get(self, request):
+		return simple_template("layout.html", title = "SignUp", message = "Please input username")
+
+	def post(self, request):
+		ret = dbconn.insert('INSERT INTO user(f_name) VALUES(%(user)s)', request.form)
+		if ret.suc:
+			return redirect("/login")
+		else:
+			return render_json(ret.to_dict())
 
 class Download(BaseView):
 	def get(self, request):
@@ -51,14 +58,9 @@ syl_url_map = [
 		'endpoint': 'logout'
 	},
 	{
-		'url': '/api',
-		'view': API,
-		'endpoint': 'api'
-	},
-	{
-		'url': '/download',
-		'view': Download,
-		'endpoint': 'download'
+		'url': '/register',
+		'view': Register,
+		'endpoint': 'register'
 	}
 ]
 
